@@ -46,6 +46,27 @@ jobs:
           GOARCH: "386"
         run: go test -count=1 ./...
 
+  # Every go-widgets module cross-compiles for the six 64-bit Linux
+  # architectures, s390x the big-endian one. vet compiles the tests too.
+  cross:
+    name: cross linux/${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64, riscv64, loong64, ppc64le, s390x]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: vet, tests included
+        env:
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: "0"
+        run: go vet ./...
+
   govulncheck:
     runs-on: ubuntu-latest
     steps:
