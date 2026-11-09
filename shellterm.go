@@ -48,6 +48,16 @@ type Options struct {
 	OnDone func()
 	// HistorySize bounds the history (0: 500).
 	HistorySize int
+	// Prompt, if set, returns the prompt to show before the line. It is
+	// called on the session's own goroutine, with the session locked, when the
+	// session starts (Attach, SetShell) and after each command, once Run has
+	// returned: so it may read state that the shell changed (a working
+	// directory, the last status) without a lock of its own, but must not call
+	// back into the Session. Control characters are dropped from its result (a
+	// prompt is one line of text, its width is counted as such); the prompt is
+	// drawn in the renderer's prompt style. "" (or nil Prompt) keeps the
+	// previous prompt, "$ " at first.
+	Prompt func() string
 }
 
 // Limits on what waits for the view or for the key goroutine.
@@ -109,6 +119,20 @@ func (t *Session) SetShell(s Shell, complete lineedit.Completer) {
 	}
 	t.ed = lineedit.New(lineedit.Options{Complete: complete, Cols: t.r.Cols, HistorySize: t.opts.HistorySize})
 	t.ed.SetHistory(hist)
+	t.refreshPrompt()
+}
+
+// refreshPrompt asks Options.Prompt for the prompt; t.mu is held and t.ed set.
+func (t *Session) refreshPrompt() {
+	if t.opts.Prompt == nil {
+		return
+	}
+	t.ed.SetPrompt(strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f || r >= 0x80 && r <= 0x9f {
+			return -1
+		}
+		return r
+	}, t.opts.Prompt()))
 }
 
 // History returns the lines entered, oldest first (for persistence).
@@ -273,6 +297,7 @@ func (t *Session) start(line string) {
 		} else if code != 0 {
 			fmt.Fprintf(&b, "\x1b[2m[exit status %d]\x1b[0m\r\n", code)
 		}
+		t.refreshPrompt()
 		b.WriteString(t.r.Render(t.ed.State()))
 		t.mu.Unlock()
 		out := b.String()
