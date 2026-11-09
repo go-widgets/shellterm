@@ -270,3 +270,43 @@ func TestSessionWithoutOnDone(t *testing.T) {
 	r.typeWait("go\r", "ran go")
 	r.until("prompt", func() bool { return !r.running() && r.line() == "$" })
 }
+
+// A prompt hook is asked at Attach and after every command, so the prompt
+// follows state the shell changed (a working directory, the last status).
+func TestSessionPromptHook(t *testing.T) {
+	sh := &recShell{}
+	var mu sync.Mutex
+	prompt := "/ $ "
+	r := newRig(t, Options{Prompt: func() string { mu.Lock(); defer mu.Unlock(); return prompt }})
+	r.ses.SetShell(sh, nil) // asks once, before any view
+	r.attach()
+	r.until("first prompt", func() bool { return r.line() == "/ $" })
+
+	// The shell changes state; the prompt changes when the command is done.
+	mu.Lock()
+	prompt = "[3] /tmp $ "
+	mu.Unlock()
+	sh.set(3, false, nil)
+	r.typeWait("false\r", "[3] /tmp $")
+	r.until("new prompt", func() bool { return !r.running() && r.line() == "[3] /tmp $" })
+
+	// Control characters are dropped, an empty answer keeps the prompt.
+	mu.Lock()
+	prompt = "a\x1b[31m\nb\x7f\u0085 $ "
+	mu.Unlock()
+	sh.set(0, false, nil)
+	r.ses.Input("x\r")
+	r.until("sanitised", func() bool { return !r.running() && r.line() == "a[31mb $" })
+	mu.Lock()
+	prompt = ""
+	mu.Unlock()
+	r.ses.Input("y\r")
+	r.until("kept", func() bool { return !r.running() && r.line() == "a[31mb $" })
+	// A shell swap re-asks too, and the default stays "$ " without a hook.
+	mu.Lock()
+	prompt = "swapped $ "
+	mu.Unlock()
+	r.ses.SetShell(sh, nil)
+	r.ses.Input("z\r")
+	r.until("after SetShell", func() bool { return !r.running() && r.line() == "swapped $" })
+}

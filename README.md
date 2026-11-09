@@ -20,6 +20,7 @@ s := shellterm.New(shellterm.Options{
     Post:     post,                // runs a func on the UI goroutine (required)
     Greeting: "my shell\r\n",      // written once, before the first prompt
     OnDone:   refresh,             // optional: after each command, on the UI goroutine
+    Prompt:   func() string { return cwd + " $ " }, // optional; default "$ "
 })
 s.SetShell(myShell, myCompleter) // a lineedit.Completer, or nil
 term := toolkit.NewTerminal(80, 24, 5000)
@@ -33,6 +34,13 @@ on every change.
 - **The prompt:** a submitted line goes to `Shell.Run` on a goroutine of its
   own. Its output becomes terminal output (`\n` → `\r\n`). A non-zero status
   shows `[exit status N]`, then the prompt returns.
+- **A prompt that follows the shell:** `Options.Prompt` (optional; the default
+  is `$ `) is asked when the session starts and after each command, once `Run`
+  has returned, so it can show a working directory or the last status
+  (`[1] /tmp $ `). It runs on the session's goroutine with the session locked:
+  read the shell's state, do not call back into the `Session`. Control
+  characters are dropped from what it returns; an empty answer keeps the previous
+  prompt. It is drawn in lineedit's prompt style (bold cyan).
 - **While a command runs:** only Ctrl-C reaches it (it cancels `ctx`).
   `Running` (an `mvvm.Observable[bool]`) says so.
 - **Keys:** they are handled on the session's goroutine, never the UI's, so a
