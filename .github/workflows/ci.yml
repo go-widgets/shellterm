@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: vet
+        run: go vet ./...
+      - name: vet (js/wasm)
+        shell: bash
+        run: GOOS=js GOARCH=wasm go vet ./...
+      - name: test
+        run: go test -race -count=1 ./...
+      - name: coverage gate (100%)
+        shell: bash
+        run: |
+          go test -count=1 -coverprofile=cov.out ./...
+          go tool cover -func=cov.out | tee cov.txt
+          grep -q 'total:.*100.0%' cov.txt || { echo "coverage below 100%"; exit 1; }
+
+  linux-386:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: test (32-bit int)
+        env:
+          GOARCH: "386"
+        run: go test -count=1 ./...
+
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
