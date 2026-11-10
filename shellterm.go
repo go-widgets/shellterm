@@ -242,7 +242,13 @@ func (t *Session) key(k lineedit.Key) {
 		}
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), CompleteTimeout)
+	// Only Tab asks the completer, so only Tab needs a deadline: a context and
+	// a timer per keystroke cost four allocations and a runtime timer for
+	// nothing (wasmdesk/wasmbox#175).
+	ctx, cancel := context.Background(), context.CancelFunc(func() {})
+	if k.Code == lineedit.KeyTab {
+		ctx, cancel = context.WithTimeout(ctx, CompleteTimeout)
+	}
 	before := t.ed.State()
 	ev := t.ed.Key(ctx, k)
 	cancel()
