@@ -310,3 +310,28 @@ func TestSessionPromptHook(t *testing.T) {
 	r.ses.Input("z\r")
 	r.until("after SetShell", func() bool { return !r.running() && r.line() == "swapped $" })
 }
+
+// A completion runs under CompleteTimeout; the keys that do not complete get no
+// timer (wasmdesk/wasmbox#175).
+func TestTabCompletionHasADeadline(t *testing.T) {
+	r := newRig(t, Options{})
+	var mu sync.Mutex
+	var deadlines []bool
+	r.ses.SetShell(&recShell{}, func(ctx context.Context, _ []string, _ string) ([]lineedit.Candidate, bool) {
+		_, ok := ctx.Deadline()
+		mu.Lock()
+		deadlines = append(deadlines, ok)
+		mu.Unlock()
+		return nil, false
+	})
+	r.attach()
+	r.ses.Input("a")
+	r.ses.Input("\t")
+	r.settle()
+	r.until("the completer ran", func() bool { mu.Lock(); defer mu.Unlock(); return len(deadlines) == 1 })
+	mu.Lock()
+	defer mu.Unlock()
+	if !deadlines[0] {
+		t.Error("Tab's context has no deadline")
+	}
+}
