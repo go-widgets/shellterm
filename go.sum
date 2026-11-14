@@ -29,8 +29,10 @@ github.com/go-widgets/painter v0.17.0 h1:PB/Xr0flFR9qL2/RPhbJOeyU6PPzcGyf3Qx4RRn
 github.com/go-widgets/painter v0.17.0/go.mod h1:8kERcZUoWNyLIas1NsMWiYynvvyx+hcB2cNIh0Bx0yc=
 github.com/go-widgets/textinput v0.1.0 h1:ifx1RjbPIWtlokoBLV1ZwlH+0CeixoMbswlqhNvYNmw=
 github.com/go-widgets/textinput v0.1.0/go.mod h1:Y/k3PDtUEMQ/4psCVKdmUStNWa/EsVAMcCKG2lEtQ5c=
-github.com/go-widgets/toolkit v0.362.0 h1:iJmqv/dwOiQW8bJQEyhAjo4uAS1VAuFM5gN4EthNou8=
-github.com/go-widgets/toolkit v0.362.0/go.mod h1:dAs4uFSnRAV0aJ1IZkxQld5PP5ZdZDOS9bf9DF4jqQ8=
+github.com/go-widgets/toolkit v0.374.11 h1:74na+ubFBrfOffSbWT1Wtq2kF4UaM1ghbAQwm5JYI7k=
+github.com/go-widgets/toolkit v0.374.11/go.mod h1:zVKiLPMvy2igZZtU7IQ1rqoH31+kb1z2C6PptbCwaHI=
+github.com/go-widgets/vcs v0.1.0 h1:1pZQygSsKBWZepAgsTdqh1bwHBjPwaLM4p7bAAONGnk=
+github.com/go-widgets/vcs v0.1.0/go.mod h1:c2SbtsVVLJUJAf/vOeMKkFWZRFyMAeDrY8rfyUyIevs=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/klauspost/compress v1.4.1/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
