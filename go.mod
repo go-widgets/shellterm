@@ -1,16 +1,16 @@
 module github.com/go-widgets/shellterm
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/go-widgets/lineedit v0.1.1
 	github.com/go-widgets/mvvm v0.15.0
-	github.com/go-widgets/toolkit v0.379.0
+	github.com/go-widgets/toolkit v0.392.0
 )
 
 require (
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
-	github.com/go-crdt/crdt v0.57.0 // indirect
+	github.com/go-crdt/crdt v0.59.0 // indirect
 	github.com/go-gfx/gfx v0.41.0 // indirect
 	github.com/go-images/images v0.3.0 // indirect
 	github.com/go-opentype/fonts v0.14.0 // indirect
